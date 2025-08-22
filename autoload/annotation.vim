@@ -100,3 +100,49 @@ function! annotation#cursor_backward(bufnum, lnum, col)
   endif
   return res
 endfunction
+
+" Look through the currently loaded buffers and load any discovered annotations.
+function! s:load_annotations_for_buffers()
+  let filtered = []
+  for bufinfo in getbufinfo()
+    if exists('bufinfo.name')
+      call add(filtered, bufinfo)
+    endif
+  endfor
+
+  " Iterate through all of the buffers where we have a path, add if they don't
+  " exist and then try to load them.
+  for bufinfo in filtered
+    if !bufloaded(bufinfo.bufnr)
+      call bufload(bufinfo.bufnr)
+    endif
+    if bufloaded(bufinfo.bufnr)
+      call annotation#frontend#load_buffer(bufinfo.bufnr, bufinfo.name)
+    endif
+  endfor
+endfunction
+
+" Set up the autocmds that are required to save and load annotations for a
+" buffer that is currently being viewed or edited.
+function! annotation#setup_persistence()
+  augroup annotations
+    autocmd!
+
+    " Managing the scope of a buffer by adding and removing the annotation state.
+    autocmd BufRead * call annotation#frontend#add_buffer(expand('<abuf>'))
+    autocmd BufAdd * call annotation#frontend#add_buffer(expand('<abuf>'))
+    autocmd BufDelete * call annotation#frontend#del_buffer(expand('<abuf>'))
+
+    " Loading and saving the annotations associated with a buffer.
+    autocmd BufReadPost * call annotation#frontend#load_buffer(expand('<abuf>'), expand('<afile>'))
+    autocmd BufWritePost * call annotation#frontend#save_buffer(expand('<abuf>'), expand('<afile>'))
+    autocmd BufLeave * call annotation#frontend#save_buffer(expand('<abuf>'), expand('<afile>'))
+
+    " Add the initial empty buffer that exists on startup.
+    autocmd VimEnter * call annotation#frontend#add_buffer(expand('<abuf>'))
+    autocmd SessionLoadPost * call s:load_annotations_for_buffers()
+
+    " If vim is leaving, then try and save the current buffer.
+    autocmd VimLeavePre * call annotation#frontend#save_buffer(expand('<abuf>'), expand('<afile>'))
+  augroup END
+endfunction
