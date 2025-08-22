@@ -56,104 +56,14 @@ function! s:LoadAnnotionsForBuffers()
   endfor
 endfunction
 
-function! ModifyProperty(bufnum, lnum, col)
-  let property = annotation#property#get(a:bufnum, a:col, a:lnum, g:annotation_property)
-  if empty(property)
-    throw printf('annotation.MissingPropertyError: no property was found in buffer %d at line %d column %d.', a:bufnum, a:lnum, a:col)
-  endif
-  call ModifyPropertyItem(a:bufnum, property)
-endfunction
-
-function! ModifyPropertyItem(bufnum, property)
-  let property = annotation#state#getprop(a:bufnum, a:property.id)
-  call annotation#menu#modify(property)
-endfunction
-
-function! AddProperty(bufnum, lnum, col, end_lnum, end_col)
-  let property = annotation#frontend#add_property(a:bufnum, a:lnum, a:col, a:end_lnum, a:end_col)
-  call annotation#menu#add(property)
-endfunction
-
-function! RemoveProperty(bufnum, lnum, col)
-  let current = annotation#property#get(a:bufnum, a:col, a:lnum, g:annotation_property)
-  if !empty(current)
-    call annotation#frontend#del_property(a:bufnum, a:lnum, a:col, current['id'])
-  endif
-endfunction
-
-function! ShowProperty(bufnum, lnum, col)
-  call annotation#frontend#show_property_data(a:bufnum, a:lnum, a:col, funcref('GetPropertyData'))
-endfunction
-
-function! GetPropertyData(property)
-  let [property, data] = annotation#frontend#get_property_data(a:property.bufnr, a:property.lnum, a:property.col, a:property.id)
-  let notes = exists('data.notes')? data.notes : {}
-
-  let res = []
-  for id in sort(keys(notes))
-    call add(res, printf('%s: %s', 1 + len(res), notes[id]))
-  endfor
-  return res
-endfunction
-
-" FIXME: should check for overlapping properties too.
-function! AddOrModifyProperty(bufnum, y, x, lnum, col, end_lnum, end_col)
-  let ids = annotation#state#find_bounds(a:bufnum, a:col, a:lnum, a:end_col, a:end_lnum)
-  let properties = mapnew(ids, 'annotation#state#getprop(a:bufnum, v:val)')
-  let current = annotation#property#get(a:bufnum, a:x, a:y, g:annotation_property)
-
-  " If there is no text at the specified line number, then we throw up an error
-  " since there's no content that can be selected. Currently we do not support
-  " annotations spanning multiple lines.. when we do this code will need fixing.
-  let content = getline(a:lnum)
-  if empty(ids) && empty(current) && !strwidth(content) && a:lnum == a:end_lnum
-    echohl ErrorMsg | echomsg printf("annotation.MissingContentError: unable to add an annotation due to line %d having no columns (%d).", a:lnum, strwidth(content)) | echohl None
-
-  " If there are no annotations found, then go ahead and add a new one.
-  elseif empty(ids) && empty(current)
-    let maxcol = 1 + strwidth(getline(a:end_lnum))
-    call AddProperty(a:bufnum, a:lnum, a:col, a:end_lnum, min([a:end_col, maxcol]))
-
-  " If there were some annotation ids, then we can go ahead and modify it.
-  elseif !empty(current)
-    call ModifyPropertyItem(a:bufnum, current)
-
-  " Check the span of a single line to figure out the annotation to modify.
-  elseif a:lnum == a:end_lnum
-    let filtered = annotation#property#filter_by_span(properties, a:col, a:end_col, a:lnum)
-    let property = filtered[0]
-    call ModifyPropertyItem(a:bufnum, property)
-  endif
-endfunction
-
-function! CursorForward(bufnum, lnum, col)
-  let [x, y] = annotation#property#scanforward(a:bufnum, a:col, a:lnum, g:annotation_property)
-  if [a:col, a:lnum] != [x, y]
-    let res = (cursor(y, x) < 0)? v:false : v:true
-  else
-    let res = v:false
-  endif
-  return res
-endfunction
-
-function! CursorBackward(bufnum, lnum, col)
-  let [x, y] = annotation#property#scanbackward(a:bufnum, a:col, a:lnum, g:annotation_property)
-  if [a:col, a:lnum] != [x, y]
-    let res = (cursor(y, x) < 0)? v:false : v:true
-  else
-    let res = v:false
-  endif
-  return res
-endfunction
-
 """ Define some mapping actions for users to customize their bindings with.
-xmap <Plug>(annotation-visual-add) <Esc><Cmd>call AddOrModifyProperty(bufnr(), line('.'), col('.'), getpos("'<")[1], getpos("'<")[2], getpos("'>")[1], 1 + getpos("'>")[2])<CR>
-nmap <Plug>(annotation-line-add) <Esc><Cmd>call AddOrModifyProperty(bufnr(), line('.'), col('.'), line('.'), 1 + match(getline('.'), '\S'), line('.'), col('$'))<CR>
-nmap <Plug>(annotation-position-remove) <Cmd>call RemoveProperty(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
-nmap <Plug>(annotation-position-show) <Cmd>call ShowProperty(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
+xmap <Plug>(annotation-visual-add) <Esc><Cmd>call annotation#select(bufnr(), line('.'), col('.'), getpos("'<")[1], getpos("'<")[2], getpos("'>")[1], 1 + getpos("'>")[2])<CR>
+nmap <Plug>(annotation-line-add) <Esc><Cmd>call annotation#select(bufnr(), line('.'), col('.'), line('.'), 1 + match(getline('.'), '\S'), line('.'), col('$'))<CR>
+nmap <Plug>(annotation-position-remove) <Cmd>call annotation#cursor_remove(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
+nmap <Plug>(annotation-position-show) <Cmd>call annotation#cursor_show(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
 
-nmap <Plug>(annotation-seek-backward) <Cmd>call CursorBackward(bufnr(), line('.'), col('.'))<CR>
-nmap <Plug>(annotation-seek-forawrd) <Cmd>call CursorForward(bufnr(), line('.'), col('.'))<CR>
+nmap <Plug>(annotation-seek-backward) <Cmd>call annotation#cursor_backward(bufnr(), line('.'), col('.'))<CR>
+nmap <Plug>(annotation-seek-forward) <Cmd>call annotation#cursor_forward(bufnr(), line('.'), col('.'))<CR>
 
 """ Set some default mappings for interacting with annotations.
 let mapleader = "\<C-m>"
