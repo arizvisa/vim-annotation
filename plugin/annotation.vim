@@ -29,12 +29,14 @@ nmap <Plug>(annotation-seek-forward) <Cmd>call annotation#cursor_forward(bufnr()
 
 """ Set some default mappings for interacting with annotations.
 let mapleader = "\<C-m>"
-xmap <Leader>n <Plug>(annotation-visual-add)
-nmap <Leader>n <Plug>(annotation-line-add)
-nmap <Leader>d <Plug>(annotation-position-remove)
-nmap <Leader>? <Plug>(annotation-position-show)
+if get(g:, 'annotation#bindings', v:true)
+  xmap <Leader>n <Plug>(annotation-visual-add)
+  nmap <Leader>n <Plug>(annotation-line-add)
+  nmap <Leader>d <Plug>(annotation-position-remove)
+  nmap <Leader>? <Plug>(annotation-position-show)
 
-nmap <Leader>[ <Plug>(annotation-seek-backward)
-nmap <Leader>] <Plug>(annotation-seek-forward)
-nmap <Leader><C-[> <Plug>(annotation-seek-backward)
-nmap <Leader><C-]> <Plug>(annotation-seek-forward)
+  nmap <Leader>[ <Plug>(annotation-seek-backward)
+  nmap <Leader>] <Plug>(annotation-seek-forward)
+  nmap <Leader><C-[> <Plug>(annotation-seek-backward)
+  nmap <Leader><C-]> <Plug>(annotation-seek-forward)
+endif
