@@ -146,3 +146,20 @@ function! annotation#setup_persistence()
     autocmd VimLeavePre * call annotation#frontend#save_buffer(expand('<abuf>'), expand('<afile>'))
   augroup END
 endfunction
+
+" Set up the default options used by the plugin and create the configured
+" property if it doesn't already exist.
+function! annotation#setup_defaults()
+  let l:property_defaults = {'highlight': 'DiffText', 'override': v:true}
+
+  " Assign some reasonable defaults to our options.
+  let g:annotation#property = get(g:, 'annotation#property', 'annotation')
+  let g:annotation#bindings = get(g:, 'annotation#bindings', v:true)
+
+  " Check if the configured property type exists within the global properties.
+  " If it doesn't, then add the property using the defaults we assigned above.
+  let l:available = prop_type_list()
+  if index(l:available, g:annotation#property) < 0
+    call prop_type_add(g:annotation#property, l:property_defaults)
+  endif
+endfunction
