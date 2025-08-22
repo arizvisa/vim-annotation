@@ -162,19 +162,19 @@ function! annotation#ui#menu(items, title, options, send)
 endfunction
 
 " Place a sign at the specified line of the given buffer.
-function! annotation#ui#placesign(bufnum, line, name, group=v:none)
+function! annotation#ui#placesign(bufnum, line, name, group=v:null)
   if type(a:bufnum) != v:t_number
     throw printf('annotation.InvalidParameterError: unable to place a sign in the specified buffer due to it being an unsupported type (%d).', type(a:bufnum))
   elseif type(a:line) != v:t_number
     throw printf('annotation.InvalidParameterError: unable to place a sign at the specified line of buffer %d due to it being an unsupported type (%d).', a:bufnum, type(a:line))
   elseif type(a:name) != v:t_string
     throw printf('annotation.InvalidParameterError: unable to place a sign at line %d of buffer %d due to its name being an unsupported type (%d).', a:line, a:bufnum, type(a:name))
-  elseif a:group != v:none && type(a:group) != v:t_string
+  elseif a:group != v:null && type(a:group) != v:t_string
     throw printf('annotation.InvalidParameterError: unable to place a sign "%s" at line %d of buffer %d due to its group being an unsupported type (%d).', a:name, a:line, a:bufnum, type(a:group))
   endif
 
   " calculate the group name for the sign, and its location dictionary.
-  let groupname = (a:group == v:none)? '' : a:group
+  let groupname = (a:group == v:null)? '' : a:group
   let location = {'lnum': a:line}
 
   " then we can create it to get its id, and then place it.

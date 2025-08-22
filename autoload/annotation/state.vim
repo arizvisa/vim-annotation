@@ -155,7 +155,7 @@ function! annotation#state#save(bufnum)
       if exists('property[field]')
         let propertyresults[key][field] = copy(property[field])
       else
-        let propertyresults[key][field] = v:none
+        let propertyresults[key][field] = v:null
       endif
     endfor
   endfor
@@ -606,7 +606,7 @@ function! annotation#state#setdata(bufnum, id, data)
 endfunction
 
 " Add a new sign to the state for the specified buffer number.
-function! annotation#state#newsign(bufnum, line, name, group=v:none)
+function! annotation#state#newsign(bufnum, line, name, group=v:null)
   if !exists('s:STATE[a:bufnum]')
     throw printf('annotation.MissingStateError: state for buffer %d does not exist.', a:bufnum)
   elseif type(a:id) != v:t_number
@@ -616,7 +616,7 @@ function! annotation#state#newsign(bufnum, line, name, group=v:none)
   elseif type(a:name) != v:t_string || empty(a:name)
     let message = printf('a name with an unsupported type (%d).', type(a:name))
     throw printf('annotation.InvalidParameterError: unable to add a sign at line number %d using %s.', type(a:line), empty(a:name)? 'an empty name' : message)
-  elseif a:group != v:none && type(a:group) != v:t_string
+  elseif a:group != v:null && type(a:group) != v:t_string
     throw printf('annotation.InvalidParameterError: unable to add sign "%s" at line number %d using a group with an unsupported type (%d).', a:name, a:line, type(a:group))
   endif
 
@@ -638,7 +638,7 @@ function! annotation#state#newsign(bufnum, line, name, group=v:none)
 
   " now we can assign our signdata that we'll state into the sign states.
   let signdata = {'id': l:id, 'lnum': a:line, 'name': a:name, 'bufnr': a:bufnum}
-  if a:group != v:none
+  if a:group != v:null
     let signdata['group'] = a:group
   endif
 

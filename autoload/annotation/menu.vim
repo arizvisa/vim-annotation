@@ -115,7 +115,7 @@ function! s:show_annotation_menu(property, title, callbacks)
   " Define a closure that dispatches to the correct function depending on
   " whatever menu item the user has selected.
   function! ShowSelected(id, label) closure
-    let l:Callback = exists('a:callbacks[a:label]')? a:callbacks[a:label] : v:none
+    let l:Callback = exists('a:callbacks[a:label]')? a:callbacks[a:label] : v:null
 
     " Use the label to dispatch to the correct function and capturing whether it
     " suceeded or failed. This way we can use the callback to customize things.
@@ -130,7 +130,7 @@ function! s:show_annotation_menu(property, title, callbacks)
     endif
 
     " If we have a callback, then execute it for whatever label was selected.
-    if l:Callback != v:none
+    if l:Callback != v:null
       call l:Callback(a:property, a:label, ok)
     endif
   endfunction
