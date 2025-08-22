@@ -3,19 +3,20 @@
 
 if exists('g:loaded_annotation') && g:loaded_annotation
   finish
-elseif !has('textprop')
-  echohl WarningMsg | echomsg printf("Refusing to load the annotation.vim plugin due to the host editor missing the \"%s\" feature.", 'textprop') | echohl None
-  finish
 endif
+
+" Check for the existence of any required Vim features
+for s:feature in ['windows', 'textprop']
+  if !has(s:feature)
+    echohl WarningMsg | echomsg printf("Refusing to load the annotation.vim plugin due to the host editor missing the \"%s\" feature.", s:feature) | echohl None
+    finish
+  endif
+endfor
 let g:loaded_annotation = v:true
 
-""" FIXME: the things in this script need to be renamed and refactored into
-"""        their own autoload library as the `annotation#frontend` namespace.
-let g:annotation#property = 'annotation'
-call prop_type_add(g:annotation#property, {'highlight': 'DiffText', 'override': v:true})
-
-" Set up the required autocmds so that we can track the annotations that are
-" associated with each buffer being viewed or edited.
+" Figure out the default options for the plugin, and then set up the required
+" autocmds so that we can track the annotations for each buffer being viewed.
+call annotation#setup_defaults()
 call annotation#setup_persistence()
 
 """ Define some mapping actions for users to customize their bindings with.
