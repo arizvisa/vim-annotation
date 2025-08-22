@@ -11,8 +11,8 @@ let g:loaded_annotation = v:true
 
 """ FIXME: the things in this script need to be renamed and refactored into
 """        their own autoload library as the `annotation#frontend` namespace.
-let g:annotation_property = 'annotation'
-call prop_type_add(g:annotation_property, {'highlight': 'DiffText', 'override': v:true})
+let g:annotation#property = 'annotation'
+call prop_type_add(g:annotation#property, {'highlight': 'DiffText', 'override': v:true})
 
 " Set up the required autocmds so that we can track the annotations that are
 " associated with each buffer being viewed or edited.

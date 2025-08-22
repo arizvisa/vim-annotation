@@ -28,7 +28,7 @@ endfunction
 
 " Modify the annotation at the specified cursor position.
 function! annotation#cursor_modify(bufnum, lnum, col)
-  let property = annotation#property#get(a:bufnum, a:col, a:lnum, g:annotation_property)
+  let property = annotation#property#get(a:bufnum, a:col, a:lnum, g:annotation#property)
   if empty(property)
     throw printf('annotation.MissingPropertyError: no property was found in buffer %d at line %d column %d.', a:bufnum, a:lnum, a:col)
   endif
@@ -37,7 +37,7 @@ endfunction
 
 " Remove the annotation at the specified cursor position.
 function! annotation#cursor_remove(bufnum, lnum, col)
-  let current = annotation#property#get(a:bufnum, a:col, a:lnum, g:annotation_property)
+  let current = annotation#property#get(a:bufnum, a:col, a:lnum, g:annotation#property)
   if !empty(current)
     call annotation#frontend#del_property(a:bufnum, a:lnum, a:col, current['id'])
   endif
@@ -53,7 +53,7 @@ endfunction
 function! annotation#select(bufnum, y, x, lnum, col, end_lnum, end_col)
   let ids = annotation#state#find_bounds(a:bufnum, a:col, a:lnum, a:end_col, a:end_lnum)
   let properties = mapnew(ids, 'annotation#state#getprop(a:bufnum, v:val)')
-  let current = annotation#property#get(a:bufnum, a:x, a:y, g:annotation_property)
+  let current = annotation#property#get(a:bufnum, a:x, a:y, g:annotation#property)
 
   " If there is no text at the specified line number, then we throw up an error
   " since there's no content that can be selected. Currently we do not support
@@ -81,7 +81,7 @@ endfunction
 
 " Scan forward from the specified cursor position to the next annotation.
 function! annotation#cursor_forward(bufnum, lnum, col)
-  let [x, y] = annotation#property#scanforward(a:bufnum, a:col, a:lnum, g:annotation_property)
+  let [x, y] = annotation#property#scanforward(a:bufnum, a:col, a:lnum, g:annotation#property)
   if [a:col, a:lnum] != [x, y]
     let res = (cursor(y, x) < 0)? v:false : v:true
   else
@@ -92,7 +92,7 @@ endfunction
 
 " Scan backward from the specified cursor position to the previous annotation.
 function! annotation#cursor_backward(bufnum, lnum, col)
-  let [x, y] = annotation#property#scanbackward(a:bufnum, a:col, a:lnum, g:annotation_property)
+  let [x, y] = annotation#property#scanbackward(a:bufnum, a:col, a:lnum, g:annotation#property)
   if [a:col, a:lnum] != [x, y]
     let res = (cursor(y, x) < 0)? v:false : v:true
   else

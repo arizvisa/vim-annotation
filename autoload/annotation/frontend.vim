@@ -6,7 +6,7 @@
 " unless the parameter is undefined at which point it returns the global.
 function! s:default_annotation_property(id=v:null)
   if a:id == v:null
-    return get(g:, 'annotation_property', 'annotation')
+    return get(g:, 'annotation#property', 'annotation')
   endif
   return a:id
 endfunction
