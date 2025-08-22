@@ -1,4 +1,15 @@
-let g:annotation_property = 'annotation'
+""" This namespace contains the frontend to the text property backend. Despite
+""" this being labeled as "frontend", the code within is considered internal.
+
+" This function is just a wrapper for getting the property type from the
+" g:annotation#property variable. It takes a single parameter and returns it
+" unless the parameter is undefined at which point it returns the global.
+function! s:default_annotation_property(id=v:null)
+  if a:id == v:null
+    return get(g:, 'annotation_property', 'annotation')
+  endif
+  return a:id
+endfunction
 
 " Add a new buffer to the current annotation state.
 function! annotation#frontend#add_buffer(bufnum)
@@ -24,7 +35,7 @@ function! annotation#frontend#add_property(bufnum, lnum, col, end_lnum, end_col)
   let [new, _] = annotation#state#newprop(a:bufnum, newprops)
 
   " Set up the dictionary that we will use to create the property.
-  let new.type = g:annotation_property
+  let new.type = s:default_annotation_property()
   let new.bufnr = a:bufnum
   let new.end_lnum = a:end_lnum
   let new.end_col = a:end_col
@@ -47,8 +58,8 @@ function! annotation#frontend#add_property(bufnum, lnum, col, end_lnum, end_col)
 endfunction
 
 " Remove a property from the state for the specified buffer.
-function! annotation#frontend#del_property(bufnum, lnum, col, id=g:annotation_property)
-  let property = annotation#property#get(a:bufnum, a:col, a:lnum, a:id)
+function! annotation#frontend#del_property(bufnum, lnum, col, id=v:null)
+  let property = annotation#property#get(a:bufnum, a:col, a:lnum, s:default_annotation_property(a:id))
   let bounds = annotation#property#bounds(a:bufnum, a:col, a:lnum)
 
   " If there is no property or we couldn't get the boundaries, then abort.
@@ -81,8 +92,8 @@ function! annotation#frontend#del_property(bufnum, lnum, col, id=g:annotation_pr
 endfunction
 
 " Return the property data for the specified property from the given buffer.
-function! annotation#frontend#get_property_data(bufnum, lnum, col, id=g:annotation_property)
-  let property = annotation#property#get(a:bufnum, a:col, a:lnum, a:id)
+function! annotation#frontend#get_property_data(bufnum, lnum, col, id=v:null)
+  let property = annotation#property#get(a:bufnum, a:col, a:lnum, s:default_annotation_property(a:id))
   if empty(property)
     throw printf('annotation.MissingPropertyError: no property was found in buffer %d at line %d column %d.', a:bufnum, a:lnum, a:col)
   elseif !exists('property.id')
@@ -94,8 +105,8 @@ function! annotation#frontend#get_property_data(bufnum, lnum, col, id=g:annotati
 endfunction
 
 " Set the property data for the specified property from the given buffer.
-function! annotation#frontend#set_property_data(bufnum, lnum, col, data, id=g:annotation_property)
-  let property = annotation#property#get(a:bufnum, a:col, a:lnum, a:id)
+function! annotation#frontend#set_property_data(bufnum, lnum, col, data, id=v:null)
+  let property = annotation#property#get(a:bufnum, a:col, a:lnum, s:default_annotation_property(a:id))
   if empty(property)
     throw printf('annotation.MissingPropertyError: no property was found in buffer %d at line %d column %d.', a:bufnum, a:lnum, a:col)
   elseif !exists('property.id')
@@ -113,8 +124,8 @@ function! annotation#frontend#set_property_data(bufnum, lnum, col, data, id=g:an
   return [property, updated]
 endfunction
 
-function! annotation#frontend#show_property_data(bufnum, lnum, col, data, id=g:annotation_property, persist=v:false)
-  let property = annotation#property#get(a:bufnum, a:col, a:lnum, a:id)
+function! annotation#frontend#show_property_data(bufnum, lnum, col, data, id=v:null, persist=v:false)
+  let property = annotation#property#get(a:bufnum, a:col, a:lnum, s:default_annotation_property(a:id))
   if empty(property)
     echohl ErrorMsg | echomsg printf('annotation.MissingPropertyError: unable to find a property to show at line %d column %d of buffer %d.', a:lnum, a:col, a:bufnum) | echohl None
     return []
