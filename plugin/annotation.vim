@@ -146,12 +146,23 @@ function! CursorBackward(bufnum, lnum, col)
   return res
 endfunction
 
-xmap <C-m>n <Esc><Cmd>call AddOrModifyProperty(bufnr(), line('.'), col('.'), getpos("'<")[1], getpos("'<")[2], getpos("'>")[1], 1 + getpos("'>")[2])<CR>
-nmap <C-m>n <Esc><Cmd>call AddOrModifyProperty(bufnr(), line('.'), col('.'), line('.'), 1 + match(getline('.'), '\S'), line('.'), col('$'))<CR>
-nmap <C-m>d <Cmd>call RemoveProperty(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
-nmap <C-m>? <Cmd>call ShowProperty(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
+""" Define some mapping actions for users to customize their bindings with.
+xmap <Plug>(annotation-visual-add) <Esc><Cmd>call AddOrModifyProperty(bufnr(), line('.'), col('.'), getpos("'<")[1], getpos("'<")[2], getpos("'>")[1], 1 + getpos("'>")[2])<CR>
+nmap <Plug>(annotation-line-add) <Esc><Cmd>call AddOrModifyProperty(bufnr(), line('.'), col('.'), line('.'), 1 + match(getline('.'), '\S'), line('.'), col('$'))<CR>
+nmap <Plug>(annotation-position-remove) <Cmd>call RemoveProperty(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
+nmap <Plug>(annotation-position-show) <Cmd>call ShowProperty(bufnr(), getpos('.')[1], getpos('.')[2])<CR>
 
-nmap <C-m>[ <Cmd>call CursorBackward(bufnr(), line('.'), col('.'))<CR>
-nmap <C-m>] <Cmd>call CursorForward(bufnr(), line('.'), col('.'))<CR>
-nmap <C-m><C-[> <Cmd>call CursorBackward(bufnr(), line('.'), col('.'))<CR>
-nmap <C-m><C-]> <Cmd>call CursorForward(bufnr(), line('.'), col('.'))<CR>
+nmap <Plug>(annotation-seek-backward) <Cmd>call CursorBackward(bufnr(), line('.'), col('.'))<CR>
+nmap <Plug>(annotation-seek-forawrd) <Cmd>call CursorForward(bufnr(), line('.'), col('.'))<CR>
+
+""" Set some default mappings for interacting with annotations.
+let mapleader = "\<C-m>"
+xmap <Leader>n <Plug>(annotation-visual-add)
+nmap <Leader>n <Plug>(annotation-line-add)
+nmap <Leader>d <Plug>(annotation-position-remove)
+nmap <Leader>? <Plug>(annotation-position-show)
+
+nmap <Leader>[ <Plug>(annotation-seek-backward)
+nmap <Leader>] <Plug>(annotation-seek-forward)
+nmap <Leader><C-[> <Plug>(annotation-seek-backward)
+nmap <Leader><C-]> <Plug>(annotation-seek-forward)
