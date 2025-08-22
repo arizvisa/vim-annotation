@@ -1,0 +1,125 @@
+*annotation.txt*	Annotation of source code using Vim text properties
+Author:			Ali Rizvi-Santiago <arizvisa-at-gmail-com>
+
+==============================================================================
+CONTENTS					*annotation-contents*
+
+	1. Introduction				|annotation-intro|
+	2. Usage				|annotation-usage|
+	3. Configuration			|annotation-configuration|
+	4. Mappings				|annotation-mappings|
+	5. History				|annotation-history|
+	6. Credits				|annotation-credits|
+
+==============================================================================
+INTRODUCTION					*annotation-intro*
+
+This plugin leverages the |+textprop| feature introduced by Vim |version-8.2|
+to facilitate annotating the text found within the current document being
+viewed. Annotations created by this plugin do not modify the target document
+and are stored distinctly separate from the buffer file name in order to
+preserve the original document contents.
+
+The intention of this plugin is to better facilitate adding arbitrary
+notations as is necessary when reviewing or auditing source code. These
+annotations are then synchronized to disk when switching between buffers as to
+preserve any additional changes made by the user.
+
+==============================================================================
+USAGE						*annotation-usage*
+
+General usage of the annotation functionality for this plugin involves viewing
+or editing a specific file and then interacting with the actions provided by
+the plugin. The following keybindings for interfacing with a chosen annotation
+are configured by default.
+
+							*CTRL-M_n*
+	<C-m>n		Add a new annotation or modify an existing one.
+			This mapping applies to |visual-mode| and |normal-mode|.
+							*CTRL-M_?*
+	<C-m>?		Show the annotation found at the current cursor
+			position using a |popup-window|.
+							*CTRL-M_d*
+	<C-m>d		Remove the annotation at the current cursor position.
+							*CTRL-M_[*
+	<C-m>[		Seek backwards from the current cursor position to the
+			previously defined annotation.
+							*CTRL-M_]*
+	<C-m>]		Seek forwards from the current cursor position to the
+			next defined annotation.
+
+Annotations are stored in the same directory as the buffer being viewed, and
+are encoded using the |json_encode()| function. When switching into a buffer,
+the directory of the buffer is checked for any existing annotations. Once
+verified, the |json_decode()| function will be used to load them.
+
+==============================================================================
+CONFIGURATION					*annotation-configuration*
+
+There are a few options that are provided to allow the user to customize the
+plugin defaults. Generally, these options are to be specified within the
+user's |vimrc| which is loaded upon starting the editor.
+
+:let *g:annotation#property* = (|String|)
+	Specify the default text property name used by the plugin when
+	displaying annotations. This value corresponds to the "type" field
+	that is associated with a text property. For more information, please
+	review the |text-prop-intro| section within the manual. By default,
+	this variable is set by the plugin to `"annotation"`.
+
+:let *g:annotation#bindings* = (|Boolean|)
+	Specify whether the default keyboard mappings for the plugin are to be
+	used. By default, this is set to `v:true`.
+
+==============================================================================
+MAPPINGS					*annotation-mappings*
+
+The following plugin actions can be used with the |<Plug>| mapping to
+customize the bindings used by the annotation plugin. This way a user can
+specify their own bindings for interacting with the annotations in a document.
+For more information, please review the |using-<Plug>| section within the
+manual.
+
+========================================================================
+| Mapping                            | Description                     |
+========================================================================
+| <Plug>(annotation-visual-add)      | Add a new or modify an existing |
+|                                    | annotation using visual mode    |
+------------------------------------------------------------------------
+| <Plug>(annotation-line-add)        | Add a new or modify an existing |
+|                                    | annotation at the current line  |
+------------------------------------------------------------------------
+| <Plug>(annotation-position-remove) | Remove the annotation found at  |
+|                                    | the current cursor position     |
+------------------------------------------------------------------------
+| <Plug>(annotation-position-show)   | Show the annotation at the      |
+|                                    | current cursor position         |
+------------------------------------------------------------------------
+| <Plug>(annotation-seek-backward)   | Seek to the previous annotation |
+|                                    | in the current document         |
+------------------------------------------------------------------------
+| <Plug>(annotation-seek-forward)    | Seek to the next annotation in  |
+|                                    | the current document            |
+------------------------------------------------------------------------
+
+The following example demonstrates using the previously listed actions to bind
+plugin functionality to specific keyboard mappings.
+>
+	xmap <C-m>n		<Plug>(annotation-visual-add)
+	nmap <C-m>n		<Plug>(annotation-line-add)
+	nmap <C-m>d		<Plug>(annotation-position-remove)
+	nmap <C-m>?		<Plug>(annotation-position-show)
+
+	nmap <C-m>[		<Plug>(annotation-seek-backward)
+	nmap <C-m>]		<Plug>(annotation-seek-forward)
+	nmap <C-m><C-[>		<Plug>(annotation-seek-backward)
+	nmap <C-m><C-]>		<Plug>(annotation-seek-forward)
+<
+These are the default mappings that are set when the plugin is loaded and is
+described in detail within the |annotation-usage| section.
+
+==============================================================================
+HISTORY						*annotation-history*
+
+    v1:     Aug, 2025   Creation of repository and documentation.
+    v0:     Jun, 2025   Initial research and development.
